@@ -1,0 +1,25 @@
+Company Name - The Jewel Nest
+
+Domain - An online Jewellery Store
+
+Create a modern, aesthetic website for a jewellery story named as The Jewel Nest. It sells modern stylish jewellery store where users can browse through different options and buy
+
+Here are the list of features which are required:
+ - A complete functional website with aesthetic theme (light, golden, and matte black)
+ - A complete functional admin panel to control the website, from which, admin can:
+	- Create new product categories
+	- Create new product where admin can upload multiple pictures, title, description, price and categories it with the created category
+	- Check current orders (which shows user info taken at checkout including contact number, email, product purchased and address)
+	- Create sale
+	- Create and manage coupon code which users and apply on products they buy
+	- Proper dashboard to see revenue
+	- manage inventory and stock
+
+- Customer facing UI to purchase jewellery
+- Proper cart and checkout page. Users can purchase without any login, they will have to give contact number, email, delivery address. They will get an orderID
+
+Basically, it should mimic a shopify store which has much more capabilities
+
+
+Domain name - thejewelnest.co.in
+Instagram handle username - thejewel_nest

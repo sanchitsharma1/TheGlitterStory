@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" fill="none" role="img" aria-label="The Jewel Nest">
+  <!-- Minimal nest monogram + wordmark -->
+  <g transform="translate(8,12)">
+    <circle cx="28" cy="28" r="26" stroke="#C9A227" stroke-width="1.25" opacity="0.9"/>
+    <path d="M14 34c6-10 14-16 28-16 6 0 12 2 16 5" stroke="#1A1A1A" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M16 38c7-8 15-12 26-12 5 0 10 1.2 14 3.5" stroke="#C9A227" stroke-width="1.2" stroke-linecap="round" opacity="0.85"/>
+    <path d="M18 42c7-6 14-9 24-9 4.5 0 9 1 12.5 2.8" stroke="#1A1A1A" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="34" cy="22" r="2.2" fill="#C9A227"/>
+    <circle cx="34" cy="22" r="0.9" fill="#F7F3EA"/>
+  </g>
+  <g fill="#1A1A1A">
+    <text x="78" y="36" font-family="Georgia, 'Times New Roman', serif" font-size="18" letter-spacing="3.5">THE JEWEL</text>
+    <text x="78" y="58" font-family="Georgia, 'Times New Roman', serif" font-size="18" letter-spacing="6.5">NEST</text>
+  </g>
+  <line x1="78" y1="42" x2="210" y2="42" stroke="#C9A227" stroke-width="0.75" opacity="0.7"/>
+</svg>

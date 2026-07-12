@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ivory: #f7f3ea;
+  --ivory-dark: #ebe4d6;
+  --ink: #1a1a1a;
+  --gold: #c9a227;
+  --gold-dark: #a8861a;
+  --matte: #111111;
+  --background: var(--ivory);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ivory: var(--ivory);
+  --color-ivory-dark: var(--ivory-dark);
+  --color-ink: var(--ink);
+  --color-gold: var(--gold);
+  --color-gold-dark: var(--gold-dark);
+  --color-matte: var(--matte);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--gold) 35%, white);
+  color: var(--ink);
+}
+
+/* Subtle paper grain for luxury feel */
+.grain {
+  position: relative;
+}
+
+.grain::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.prose-nest p {
+  margin-bottom: 1rem;
+  line-height: 1.75;
+  font-size: 1.015rem;
+  color: color-mix(in oklab, var(--ink) 75%, transparent);
+}
+
+.prose-nest h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.65rem;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--ink);
 }
