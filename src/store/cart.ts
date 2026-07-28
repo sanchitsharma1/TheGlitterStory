@@ -51,7 +51,6 @@ export const useCart = create<CartState>()(
         set((state) => {
           if (existing) {
             return {
-              drawerOpen: true,
               items: state.items.map((i) =>
                 i.productId === item.productId
                   ? { ...i, ...item, quantity: nextQty }
@@ -60,11 +59,11 @@ export const useCart = create<CartState>()(
             };
           }
           return {
-            drawerOpen: true,
             items: [...state.items, { ...item, quantity: item.quantity }],
           };
         });
 
+        // Do not open the cart drawer - keep shopping uninterrupted
         return { ok: true, message: "Added to bag" };
       },
 

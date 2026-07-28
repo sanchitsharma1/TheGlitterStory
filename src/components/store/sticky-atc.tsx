@@ -10,6 +10,7 @@ import { mapProductToCartItem } from "@/lib/commerce/pricing";
 /** Mobile sticky add-to-bag bar - appears after scrolling past main ATC */
 export function StickyAtc({ product }: { product: Product }) {
   const [visible, setVisible] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
   const addItem = useCart((s) => s.addItem);
   const soldOut = product.stock <= 0;
 
@@ -30,11 +31,18 @@ export function StickyAtc({ product }: { product: Product }) {
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-base text-ink">{product.title}</p>
           <p className="text-sm font-semibold">{formatINR(product.price)}</p>
+          {msg && (
+            <p className="truncate text-xs text-emerald-700">{msg}</p>
+          )}
         </div>
         <Button
           size="md"
           className="shrink-0"
-          onClick={() => addItem(mapProductToCartItem(product, 1))}
+          onClick={() => {
+            const result = addItem(mapProductToCartItem(product, 1));
+            setMsg(result.message);
+            setTimeout(() => setMsg(null), 1600);
+          }}
         >
           Add to bag
         </Button>

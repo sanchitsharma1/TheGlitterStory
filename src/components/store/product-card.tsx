@@ -28,7 +28,7 @@ export function ProductCard({ product }: { product: Product }) {
 
     setAdding(true);
     const result = addItem(mapProductToCartItem(product, 1));
-    setMsg(result.ok ? null : result.message);
+    setMsg(result.message);
     setTimeout(() => {
       setMsg(null);
       setAdding(false);
@@ -136,7 +136,16 @@ export function ProductCard({ product }: { product: Product }) {
             </Button>
           )}
           {msg && (
-            <p className="mt-1.5 text-center text-xs text-red-600">{msg}</p>
+            <p
+              className={cn(
+                "mt-1.5 text-center text-xs",
+                msg.toLowerCase().includes("added")
+                  ? "text-emerald-700"
+                  : "text-red-600"
+              )}
+            >
+              {msg}
+            </p>
           )}
         </div>
       </div>
