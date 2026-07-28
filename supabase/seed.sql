@@ -11,8 +11,8 @@ insert into site_settings (key, value) values
     "shipping_fee": 120,
     "cod_min_order": 299,
     "service_region": "India",
-    "allow_cod": true,
-    "allow_razorpay": false
+    "allow_cod": false,
+    "allow_razorpay": true
   }'::jsonb
 ),
 (

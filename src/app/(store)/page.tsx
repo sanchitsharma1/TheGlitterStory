@@ -45,7 +45,7 @@ export default async function HomePage() {
             <div className="mt-10 flex flex-wrap gap-6 text-xs uppercase tracking-[0.14em] text-ink/50 sm:text-[13px]">
               <span>India-wide shipping</span>
               <span>Free above ₹{config.commerce.free_shipping_threshold}</span>
-              <span>Cash on Delivery</span>
+              <span>Secure online pay</span>
             </div>
           </div>
 
@@ -163,7 +163,7 @@ export default async function HomePage() {
             },
             {
               title: "Secure checkout",
-              body: "Guest checkout with Cash on Delivery. No account needed. Your order ID is your receipt.",
+              body: "Guest checkout with secure Razorpay payment (UPI, cards, netbanking). Your order ID is your receipt.",
             },
             {
               title: "Easy returns",

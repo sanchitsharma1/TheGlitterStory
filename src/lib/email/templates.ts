@@ -70,7 +70,9 @@ export function orderConfirmationEmail(
   const paymentLabel =
     order.payment_method === "cod"
       ? "Cash on Delivery"
-      : `Online (${order.payment_status})`;
+      : order.payment_status === "paid"
+        ? "Paid online (Razorpay)"
+        : `Online (${order.payment_status})`;
 
   const body = `
     <p style="margin:0 0 12px;font-size:18px;">Thank you, ${escapeHtml(order.customer_name)}.</p>

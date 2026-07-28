@@ -122,26 +122,21 @@ ORDER_FROM_EMAIL=The Jewel Nest <support@thejewelnest.co.in>
 SUPPORT_EMAIL=support@thejewelnest.co.in
 ```
 
-## Razorpay (later)
+## Razorpay (online payment only)
 
-You can launch with **COD only**. When ready:
-
-1. Sign up at [razorpay.com](https://razorpay.com) (business details, bank account, PAN, etc.)
-2. Get **Key ID** + **Key Secret** from Dashboard → API Keys
-3. Add to env:
+COD is disabled. Checkout uses Razorpay Standard Web Checkout.
 
 ```env
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_...
-RAZORPAY_KEY_SECRET=...
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_...   # or rzp_live_... in production
+RAZORPAY_KEY_SECRET=...                    # server only - never NEXT_PUBLIC
 ```
 
-4. Tell your developer (or me) those two values (never commit the secret to git)
-5. Switch to **live** keys after Razorpay activates your account
+Flow:
+1. `POST /api/create-order` - store order + Razorpay order  
+2. Frontend opens Razorpay modal  
+3. `POST /api/verify-payment` - HMAC signature verify, mark paid, send emails  
 
-What to send me for integration (when ready):
-- `NEXT_PUBLIC_RAZORPAY_KEY_ID`
-- `RAZORPAY_KEY_SECRET` (via secure channel, not public chat if possible)
-- Confirm test vs live mode
+Test mode uses `rzp_test_` keys. Switch to **live** keys on Vercel when going live.
 
 ---
 
