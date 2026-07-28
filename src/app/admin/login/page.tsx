@@ -41,8 +41,8 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-3xl border border-ivory/10 bg-ivory p-8 shadow-2xl">
+    <div className="flex min-h-[100dvh] items-center justify-center px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
+      <div className="w-full max-w-md rounded-3xl border border-ivory/10 bg-ivory p-6 shadow-2xl sm:p-8">
         <div className="mb-6 flex flex-col items-center text-center">
           {/* Plain img avoids next/image edge cases on SVG during auth screens */}
           {/* eslint-disable-next-line @next/next/no-img-element */}

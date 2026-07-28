@@ -74,7 +74,7 @@ export default async function AdminProductsPage({
 
   const chip = (active: boolean) =>
     cn(
-      "rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.12em] transition",
+      "inline-flex min-h-9 items-center rounded-full border px-3 py-1.5 text-xs uppercase tracking-[0.1em] transition",
       active
         ? "border-ink bg-ink text-ivory"
         : "border-ink/15 text-ink/65 hover:border-ink/40"
@@ -82,28 +82,27 @@ export default async function AdminProductsPage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl">Products</h1>
+          <h1 className="font-display text-2xl sm:text-3xl">Products</h1>
           <p className="text-sm text-ink/55">
-            Manage catalogue, pricing, stock and sales · {products.length} shown
+            Catalogue · {products.length} shown
           </p>
         </div>
-        <Link href="/admin/products/new">
-          <Button>Add product</Button>
+        <Link href="/admin/products/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto">Add product</Button>
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="mt-6 space-y-4 rounded-2xl border border-ink/10 bg-white p-4 sm:p-5">
+      <div className="mt-5 space-y-4 rounded-2xl border border-ink/10 bg-white p-3 sm:p-5">
         <div>
           <p className="mb-2 text-xs uppercase tracking-[0.14em] text-ink/45">
             Category
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <Link
               href={productsHref({ stock: stockFilter, sort })}
-              className={chip(!categoryId)}
+              className={cn(chip(!categoryId), "shrink-0")}
             >
               All
             </Link>
@@ -115,7 +114,7 @@ export default async function AdminProductsPage({
                   stock: stockFilter,
                   sort,
                 })}
-                className={chip(categoryId === c.id)}
+                className={cn(chip(categoryId === c.id), "shrink-0")}
               >
                 {c.name}
               </Link>
@@ -123,7 +122,7 @@ export default async function AdminProductsPage({
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <p className="mb-2 text-xs uppercase tracking-[0.14em] text-ink/45">
               Stock
@@ -153,14 +152,14 @@ export default async function AdminProductsPage({
 
           <div>
             <p className="mb-2 text-xs uppercase tracking-[0.14em] text-ink/45">
-              Sort by stock
+              Sort
             </p>
             <div className="flex flex-wrap gap-2">
               {(
                 [
                   ["newest", "Newest"],
-                  ["stock-asc", "Stock: Low → high"],
-                  ["stock-desc", "Stock: High → low"],
+                  ["stock-asc", "Stock ↑"],
+                  ["stock-desc", "Stock ↓"],
                 ] as const
               ).map(([value, label]) => (
                 <Link
@@ -180,7 +179,50 @@ export default async function AdminProductsPage({
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-ink/10 bg-white">
+      {/* Mobile cards */}
+      <div className="mt-5 space-y-3 md:hidden">
+        {products.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-ink/15 px-4 py-10 text-center text-sm text-ink/50">
+            No products match these filters.
+          </div>
+        ) : (
+          products.map((p) => (
+            <div
+              key={p.id}
+              className="rounded-2xl border border-ink/10 bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium leading-snug text-ink">{p.title}</p>
+                  <p className="mt-1 text-xs text-ink/50">
+                    {(p.category as { name?: string } | null)?.name ??
+                      "Uncategorised"}
+                  </p>
+                </div>
+                {Number(p.stock) <= 0 ? (
+                  <Badge tone="sold">Sold</Badge>
+                ) : p.is_active ? (
+                  <Badge tone="success">Live</Badge>
+                ) : (
+                  <Badge tone="muted">Draft</Badge>
+                )}
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+                <span className="font-semibold">{formatINR(Number(p.price))}</span>
+                <span className="text-ink/55">
+                  Stock: {Number(p.stock) <= 0 ? "0" : p.stock}
+                </span>
+              </div>
+              <div className="mt-3 border-t border-ink/8 pt-3">
+                <ProductRowActions productId={p.id} title={p.title} />
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-ink/10 bg-white md:block">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-ink/10 bg-ivory/80 text-xs uppercase tracking-wider text-ink/50">
             <tr>

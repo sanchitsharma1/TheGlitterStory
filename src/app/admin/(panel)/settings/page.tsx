@@ -135,14 +135,14 @@ export default function AdminSettingsPage() {
         automatically.
       </p>
 
-      <form onSubmit={save} className="mt-8 max-w-3xl space-y-8">
-        <section className="rounded-2xl border border-ink/10 bg-white p-5">
+      <form onSubmit={save} className="mt-6 max-w-3xl space-y-6 sm:mt-8 sm:space-y-8">
+        <section className="rounded-2xl border border-ink/10 bg-white p-4 sm:p-5">
           <h2 className="font-display text-xl">Commerce</h2>
           <p className="mt-1 text-sm text-ink/50">
             Preview: Free shipping above ₹{form.free_shipping_threshold || "0"} ·
             else ₹{form.shipping_fee || "0"} shipping
           </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs uppercase tracking-wider text-ink/50">
                 Free shipping above ₹
@@ -151,6 +151,7 @@ export default function AdminSettingsPage() {
                 type="number"
                 min="0"
                 step="1"
+                inputMode="numeric"
                 value={form.free_shipping_threshold}
                 onChange={(e) =>
                   setForm({ ...form, free_shipping_threshold: e.target.value })
@@ -159,22 +160,24 @@ export default function AdminSettingsPage() {
             </div>
             <div>
               <label className="mb-1 block text-xs uppercase tracking-wider text-ink/50">
-                Shipping fee ₹ (when below free threshold)
+                Shipping fee ₹
               </label>
               <Input
                 type="number"
                 min="0"
                 step="1"
+                inputMode="numeric"
                 value={form.shipping_fee}
                 onChange={(e) => setForm({ ...form, shipping_fee: e.target.value })}
               />
             </div>
-            <div>
+            <div className="sm:col-span-2 lg:col-span-1">
               <label className="mb-1 block text-xs uppercase tracking-wider text-ink/50">
                 COD minimum ₹
               </label>
               <Input
                 type="number"
+                inputMode="numeric"
                 value={form.cod_min_order}
                 onChange={(e) => setForm({ ...form, cod_min_order: e.target.value })}
               />

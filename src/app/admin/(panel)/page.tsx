@@ -13,7 +13,12 @@ export default async function AdminDashboardPage() {
   let orderCount = 0;
   let lowStock = 0;
   let unread = 0;
-  let recent: { order_number: string; total: number; status: string; created_at: string }[] = [];
+  let recent: {
+    order_number: string;
+    total: number;
+    status: string;
+    created_at: string;
+  }[] = [];
 
   if (hasServiceRole()) {
     const supabase = createServiceClient();
@@ -70,29 +75,72 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl">Dashboard</h1>
-      <p className="mt-1 text-sm text-ink/55">Welcome back, {staff.full_name}.</p>
+      <h1 className="font-display text-2xl sm:text-3xl">Dashboard</h1>
+      <p className="mt-1 text-sm text-ink/55">
+        Welcome back, {staff.full_name}.
+      </p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {cards.map((c) => (
           <div
             key={c.label}
-            className="rounded-2xl border border-ink/10 bg-white p-5 shadow-sm"
+            className="rounded-2xl border border-ink/10 bg-white p-4 shadow-sm sm:p-5"
           >
-            <p className="text-xs uppercase tracking-[0.14em] text-ink/45">{c.label}</p>
-            <p className="mt-2 font-display text-3xl text-ink">{c.value}</p>
+            <p className="text-[10px] uppercase tracking-[0.12em] text-ink/45 sm:text-xs">
+              {c.label}
+            </p>
+            <p className="mt-2 font-display text-2xl text-ink sm:text-3xl">
+              {c.value}
+            </p>
           </div>
         ))}
       </div>
 
-      <div className="mt-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-2xl">Recent orders</h2>
-          <Link href="/admin/orders" className="text-sm text-ink/60 hover:text-ink">
+      <div className="mt-8 sm:mt-10">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="font-display text-xl sm:text-2xl">Recent orders</h2>
+          <Link
+            href="/admin/orders"
+            className="text-sm text-ink/60 hover:text-ink"
+          >
             View all
           </Link>
         </div>
-        <div className="overflow-hidden rounded-2xl border border-ink/10 bg-white">
+
+        {/* Mobile */}
+        <div className="space-y-3 md:hidden">
+          {recent.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-ink/15 px-4 py-10 text-center text-sm text-ink/50">
+              No orders yet.
+            </div>
+          ) : (
+            recent.map((o) => (
+              <Link
+                key={o.order_number}
+                href={`/admin/orders/${o.order_number}`}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-ink/10 bg-white p-4 shadow-sm active:bg-ivory"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-mono text-sm font-semibold">
+                    {o.order_number}
+                  </p>
+                  <p className="mt-0.5 text-xs capitalize text-ink/50">
+                    {o.status.replaceAll("_", " ")}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold">{formatINR(o.total)}</p>
+                  <p className="text-[11px] text-ink/45">
+                    {new Date(o.created_at).toLocaleDateString("en-IN")}
+                  </p>
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+
+        {/* Desktop */}
+        <div className="hidden overflow-hidden rounded-2xl border border-ink/10 bg-white md:block">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-ink/10 bg-ivory/80 text-xs uppercase tracking-wider text-ink/50">
               <tr>
@@ -105,19 +153,27 @@ export default async function AdminDashboardPage() {
             <tbody>
               {recent.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-ink/45">
-                    No orders yet. Connect Supabase and publish products to go live.
+                  <td
+                    colSpan={4}
+                    className="px-4 py-10 text-center text-ink/45"
+                  >
+                    No orders yet.
                   </td>
                 </tr>
               ) : (
                 recent.map((o) => (
                   <tr key={o.order_number} className="border-b border-ink/5">
                     <td className="px-4 py-3 font-medium">
-                      <Link href={`/admin/orders/${o.order_number}`} className="hover:underline">
+                      <Link
+                        href={`/admin/orders/${o.order_number}`}
+                        className="hover:underline"
+                      >
                         {o.order_number}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 capitalize">{o.status.replaceAll("_", " ")}</td>
+                    <td className="px-4 py-3 capitalize">
+                      {o.status.replaceAll("_", " ")}
+                    </td>
                     <td className="px-4 py-3">{formatINR(o.total)}</td>
                     <td className="px-4 py-3 text-ink/55">
                       {new Date(o.created_at).toLocaleString("en-IN")}
