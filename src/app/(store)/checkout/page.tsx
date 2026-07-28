@@ -8,16 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/store/cart";
 import { formatINR, indianStates } from "@/lib/utils";
-import {
-  DEFAULT_COMMERCE,
-  type CommerceSettings,
-  type PaymentMethod,
-} from "@/types";
+import { DEFAULT_COMMERCE, type CommerceSettings } from "@/types";
 import { calculateShipping, cartSubtotal } from "@/lib/commerce/pricing";
+import { Lock, ShieldCheck, CreditCard } from "lucide-react";
 
 declare global {
   interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+    Razorpay?: new (options: Record<string, unknown>) => {
+      open: () => void;
+      on: (event: string, handler: (response: unknown) => void) => void;
+    };
   }
 }
 
@@ -28,7 +28,6 @@ export default function CheckoutPage() {
   const [discount, setDiscount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
 
   const [form, setForm] = useState({
     customer_name: "",
@@ -79,6 +78,7 @@ export default function CheckoutPage() {
       }
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
       document.body.appendChild(script);
@@ -91,12 +91,12 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/checkout", {
+      const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          payment_method: paymentMethod,
+          payment_method: "razorpay",
           coupon_code: couponCode || undefined,
           items: items.map((i) => ({
             productId: i.productId,
@@ -105,64 +105,108 @@ export default function CheckoutPage() {
         }),
       });
       const data = await res.json();
+
       if (!data.ok) {
         setError(data.error || "Checkout failed");
         setLoading(false);
         return;
       }
 
-      if (paymentMethod === "razorpay" && data.razorpay) {
-        const ready = await loadRazorpay();
-        if (!ready || !window.Razorpay) {
-          setError("Could not load Razorpay. Try COD or refresh.");
-          setLoading(false);
-          return;
-        }
+      if (!data.razorpay?.orderId && !data.order_id) {
+        setError("Could not start payment. Please try again.");
+        setLoading(false);
+        return;
+      }
 
-        const rzp = new window.Razorpay({
-          key: data.razorpay.key,
-          amount: data.razorpay.amount,
-          currency: data.razorpay.currency,
-          name: "The Jewel Nest",
-          description: `Order ${data.order.order_number}`,
-          order_id: data.razorpay.orderId,
-          prefill: {
-            name: form.customer_name,
-            email: form.customer_email,
-            contact: form.customer_phone,
-          },
-          theme: { color: "#1a1a1a" },
-          handler: async (response: {
-            razorpay_payment_id: string;
-            razorpay_order_id: string;
-            razorpay_signature: string;
-          }) => {
-            await fetch("/api/razorpay/verify", {
+      const ready = await loadRazorpay();
+      if (!ready || !window.Razorpay) {
+        setError("Could not load payment window. Please refresh and try again.");
+        setLoading(false);
+        return;
+      }
+
+      const razorpayOrderId = data.razorpay?.orderId || data.order_id;
+      const amount = data.razorpay?.amount || data.amount;
+      const currency = data.razorpay?.currency || data.currency || "INR";
+      const key = data.razorpay?.key || data.key;
+
+      const rzp = new window.Razorpay({
+        key,
+        amount,
+        currency,
+        name: "The Jewel Nest",
+        description: `Order ${data.order.order_number}`,
+        image: "/brand/mark.svg",
+        order_id: razorpayOrderId,
+        prefill: {
+          name: form.customer_name,
+          email: form.customer_email,
+          contact: form.customer_phone,
+        },
+        notes: {
+          order_number: data.order.order_number,
+        },
+        theme: {
+          color: "#1a1a1a",
+        },
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          try {
+            const verifyRes = await fetch("/api/verify-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 orderId: data.order.id,
-                ...response,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
               }),
             });
+            const verifyData = await verifyRes.json();
+            if (!verifyData.ok) {
+              setError(
+                verifyData.error ||
+                  "Payment received but verification failed. Contact support with your Order ID."
+              );
+              setLoading(false);
+              return;
+            }
             clear();
             router.push(`/order/${data.order.order_number}`);
+          } catch {
+            setError(
+              "Payment may have succeeded but confirmation failed. Save your Order ID and contact support."
+            );
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+            setError(
+              "Payment was cancelled. Your pieces are reserved briefly as pending payment. Complete payment or contact support@thejewelnest.co.in with your Order ID if money was deducted."
+            );
           },
-          modal: {
-            ondismiss: () => {
-              setLoading(false);
-              setError(
-                "Payment was not completed. Your order is held as pending payment - contact us with your order ID if amount was deducted."
-              );
-            },
-          },
-        });
-        rzp.open();
-        return;
-      }
+          confirm_close: true,
+        },
+      });
 
-      clear();
-      router.push(`/order/${data.order.order_number}`);
+      rzp.on("payment.failed", (response: unknown) => {
+        const detail = response as {
+          error?: { description?: string; reason?: string };
+        };
+        setLoading(false);
+        setError(
+          detail?.error?.description ||
+            detail?.error?.reason ||
+            "Payment failed. Please try again with another method."
+        );
+      });
+
+      rzp.open();
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -184,7 +228,7 @@ export default function CheckoutPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-4xl text-ink">Checkout</h1>
       <p className="mt-2 text-[15px] text-ink/55">
-        Guest checkout - no account needed. Ships within India only.
+        Guest checkout - secure online payment. Ships within India only.
       </p>
 
       <form onSubmit={onSubmit} className="mt-8 grid gap-10 lg:grid-cols-[1.4fr_1fr]">
@@ -272,7 +316,7 @@ export default function CheckoutPage() {
                 </label>
                 <select
                   required
-                  className="flex h-11 w-full rounded-xl border border-ink/15 bg-white/80 px-3.5 text-sm outline-none focus:border-gold focus:ring-2 focus:ring-gold/25"
+                  className="flex h-11 w-full rounded-xl border border-ink/15 bg-white/80 px-3.5 text-[15px] outline-none focus:border-gold focus:ring-2 focus:ring-gold/25"
                   value={form.state}
                   onChange={(e) => setForm({ ...form, state: e.target.value })}
                 >
@@ -315,48 +359,34 @@ export default function CheckoutPage() {
 
           <section className="rounded-2xl border border-ink/10 bg-white/70 p-6">
             <h2 className="font-display text-xl">Payment</h2>
-            <div className="mt-4 space-y-3">
-              {settings.allow_cod && (
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink/10 p-4 has-[:checked]:border-gold has-[:checked]:bg-gold/5">
-                  <input
-                    type="radio"
-                    name="pay"
-                    checked={paymentMethod === "cod"}
-                    onChange={() => setPaymentMethod("cod")}
-                    className="mt-1"
-                  />
-                  <div>
-                    <p className="font-medium">Cash on Delivery</p>
-                    <p className="text-sm text-ink/50">
-                      Min order ₹{settings.cod_min_order}. Pay when your parcel arrives.
-                    </p>
-                  </div>
-                </label>
-              )}
-              {settings.allow_razorpay && (
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ink/10 p-4 has-[:checked]:border-gold has-[:checked]:bg-gold/5">
-                  <input
-                    type="radio"
-                    name="pay"
-                    checked={paymentMethod === "razorpay"}
-                    onChange={() => setPaymentMethod("razorpay")}
-                    className="mt-1"
-                  />
-                  <div>
-                    <p className="font-medium">Pay online (UPI / Card / Netbanking)</p>
-                    <p className="text-sm text-ink/50">
-                      Secure payment via Razorpay.
-                    </p>
-                  </div>
-                </label>
-              )}
+            <div className="mt-4 rounded-2xl border border-gold/40 bg-gradient-to-br from-gold/10 via-white to-ivory p-5">
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ink text-ivory">
+                  <CreditCard size={20} />
+                </div>
+                <div>
+                  <p className="font-medium text-ink">Pay securely online</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink/60">
+                    UPI, cards, netbanking and wallets via Razorpay. You will complete
+                    payment in a secure popup after placing the order.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-4 text-xs text-ink/55">
+                <span className="inline-flex items-center gap-1.5">
+                  <Lock size={14} className="text-gold-dark" /> Encrypted checkout
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck size={14} className="text-gold-dark" /> PCI-compliant
+                </span>
+              </div>
             </div>
           </section>
         </div>
 
         <aside className="h-fit rounded-2xl border border-ink/10 bg-white/80 p-6 shadow-sm">
           <h2 className="font-display text-2xl">Order summary</h2>
-          <ul className="mt-4 space-y-2 text-sm">
+          <ul className="mt-4 space-y-2 text-[15px]">
             {items.map((i) => (
               <li key={i.productId} className="flex justify-between gap-3">
                 <span className="text-ink/70">
@@ -366,14 +396,14 @@ export default function CheckoutPage() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 space-y-2 border-t border-ink/10 pt-4 text-sm">
+          <div className="mt-4 space-y-2 border-t border-ink/10 pt-4 text-[15px]">
             <div className="flex justify-between">
               <span className="text-ink/60">Subtotal</span>
               <span>{formatINR(subtotal)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-ink/60">Discount</span>
-              <span>−{formatINR(discount)}</span>
+              <span>-{formatINR(discount)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-ink/60">Shipping</span>
@@ -392,12 +422,11 @@ export default function CheckoutPage() {
           )}
 
           <Button type="submit" size="lg" className="mt-6 w-full" disabled={loading}>
-            {loading
-              ? "Placing order..."
-              : paymentMethod === "cod"
-                ? "Place COD order"
-                : "Pay & place order"}
+            {loading ? "Opening secure payment..." : `Pay ${formatINR(total)} securely`}
           </Button>
+          <p className="mt-3 text-center text-xs text-ink/45">
+            You will be redirected to Razorpay to complete payment.
+          </p>
         </aside>
       </form>
     </div>

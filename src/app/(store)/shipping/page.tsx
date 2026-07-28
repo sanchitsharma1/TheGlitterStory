@@ -21,10 +21,10 @@ export default async function ShippingPage() {
           </li>
           <li>Serviceable region: <strong className="text-ink">{commerce.service_region} only</strong> (not international yet)</li>
         </ul>
-        <h2>Cash on Delivery</h2>
+        <h2>Payment</h2>
         <p>
-          COD is available for orders of at least ₹{commerce.cod_min_order}. Online payment
-          via Razorpay (UPI/cards/netbanking) is also supported.
+          We accept secure online payments via Razorpay (UPI, cards, netbanking and wallets).
+          Cash on Delivery is not available at this time.
         </p>
         <h2>Timelines</h2>
         <p>

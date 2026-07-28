@@ -215,8 +215,8 @@ export const DEFAULT_COMMERCE: CommerceSettings = {
   shipping_fee: 120,
   cod_min_order: 299,
   service_region: "India",
-  allow_cod: true,
-  allow_razorpay: false, // enable later when Razorpay keys are configured
+  allow_cod: false,
+  allow_razorpay: true,
 };
 
 export const DEFAULT_RETURNS: ReturnsSettings = {
