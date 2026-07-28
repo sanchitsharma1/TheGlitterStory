@@ -296,13 +296,43 @@ export function ProductForm({
 
       {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <Button type="submit" disabled={loading}>
-          {loading ? "Saving…" : product ? "Update product" : "Create product"}
+          {loading ? "Saving..." : product ? "Update product" : "Create product"}
         </Button>
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Cancel
         </Button>
+        {product && (
+          <Button
+            type="button"
+            variant="danger"
+            disabled={loading}
+            onClick={async () => {
+              if (
+                !confirm(
+                  `Delete "${product.title}"?\n\nThis cannot be undone.`
+                )
+              ) {
+                return;
+              }
+              setLoading(true);
+              const res = await fetch(`/api/admin/products/${product.id}`, {
+                method: "DELETE",
+              });
+              if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                setError(data.error || "Delete failed");
+                setLoading(false);
+                return;
+              }
+              router.push("/admin/products");
+              router.refresh();
+            }}
+          >
+            Delete product
+          </Button>
+        )}
       </div>
     </form>
   );
