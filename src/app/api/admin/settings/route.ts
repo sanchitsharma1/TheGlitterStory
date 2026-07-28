@@ -65,32 +65,42 @@ export async function PUT(request: Request) {
   ];
 
   for (const row of rows) {
-    const { error } = await supabase.from("site_settings").upsert({
-      key: row.key,
-      value: row.value,
-      updated_at: new Date().toISOString(),
-    });
+    const { error } = await supabase.from("site_settings").upsert(
+      {
+        key: row.key,
+        value: row.value,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "key" }
+    );
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
   }
 
-  // Bust Next.js cache so banner, footer, shipping page update immediately
-  revalidatePath("/", "layout");
-  revalidatePath("/shipping");
-  revalidatePath("/returns");
-  revalidatePath("/cart");
-  revalidatePath("/checkout");
-  revalidatePath("/shop");
-  revalidatePath("/about");
-  revalidatePath("/contact");
-  revalidatePath("/privacy");
-  revalidatePath("/terms");
+  // Bust Next.js cache so every surface picks up new free-ship / fee values
+  const paths = [
+    "/",
+    "/shipping",
+    "/returns",
+    "/cart",
+    "/checkout",
+    "/shop",
+    "/about",
+    "/contact",
+    "/privacy",
+    "/terms",
+  ];
+  for (const path of paths) {
+    revalidatePath(path, "layout");
+    revalidatePath(path, "page");
+  }
   revalidatePath("/api/settings");
 
   return NextResponse.json({
     ok: true,
     commerce,
     policies,
+    message: `Live rates: free shipping ≥ ₹${commerce.free_shipping_threshold}, else ₹${commerce.shipping_fee}`,
   });
 }

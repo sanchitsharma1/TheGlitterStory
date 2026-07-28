@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { X } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { formatINR } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { calculateShipping } from "@/lib/commerce/pricing";
-import { DEFAULT_COMMERCE, type CommerceSettings } from "@/types";
+import { useCommerceSettings } from "@/hooks/use-commerce-settings";
 
 export function CartDrawer() {
   const {
@@ -19,16 +19,11 @@ export function CartDrawer() {
     setQuantity,
     subtotal,
   } = useCart();
-  const [commerce, setCommerce] = useState<CommerceSettings>(DEFAULT_COMMERCE);
+  const { commerce, refresh } = useCommerceSettings();
 
   useEffect(() => {
-    fetch("/api/settings", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.commerce) setCommerce(data.commerce);
-      })
-      .catch(() => undefined);
-  }, [drawerOpen]);
+    if (drawerOpen) refresh();
+  }, [drawerOpen, refresh]);
 
   const sub = subtotal();
   const shipping = calculateShipping(sub, commerce);
@@ -180,7 +175,8 @@ export function CartDrawer() {
               </div>
             </div>
             <p className="mt-2 text-xs text-ink/45">
-              Free shipping above ₹{commerce.free_shipping_threshold}
+              Free shipping above ₹{commerce.free_shipping_threshold} · else ₹
+              {commerce.shipping_fee}
             </p>
             <Link href="/checkout" onClick={closeDrawer} className="mt-4 block">
               <Button size="lg" className="w-full">

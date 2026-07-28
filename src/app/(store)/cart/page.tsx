@@ -2,32 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/store/cart";
 import { formatINR } from "@/lib/utils";
-import {
-  DEFAULT_COMMERCE,
-  type CommerceSettings,
-} from "@/types";
 import { calculateShipping, cartSubtotal } from "@/lib/commerce/pricing";
+import { useCommerceSettings } from "@/hooks/use-commerce-settings";
 
 export default function CartPage() {
   const { items, setQuantity, removeItem, couponCode, setCouponCode } = useCart();
-  const [settings, setSettings] = useState<CommerceSettings>(DEFAULT_COMMERCE);
+  const { commerce: settings } = useCommerceSettings();
   const [couponInput, setCouponInput] = useState(couponCode ?? "");
   const [couponMsg, setCouponMsg] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
-
-  useEffect(() => {
-    fetch("/api/settings", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.commerce) setSettings(data.commerce);
-      })
-      .catch(() => undefined);
-  }, []);
 
   const subtotal = useMemo(() => cartSubtotal(items), [items]);
   const afterDiscount = Math.max(0, subtotal - discount);

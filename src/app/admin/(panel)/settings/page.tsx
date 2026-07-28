@@ -115,8 +115,10 @@ export default function AdminSettingsPage() {
         shipping_summary: data.policies.shipping_summary,
       }));
     }
+    const threshold = data.commerce?.free_shipping_threshold ?? form.free_shipping_threshold;
+    const fee = data.commerce?.shipping_fee ?? form.shipping_fee;
     setMsg(
-      "Settings saved. Banner, footer, cart and shipping page now use the new rates."
+      `Settings saved. Live everywhere: free shipping ≥ ₹${threshold}, else ₹${fee} shipping (banner, footer, cart, checkout, product page, shipping page).`
     );
   }
 
@@ -136,6 +138,10 @@ export default function AdminSettingsPage() {
       <form onSubmit={save} className="mt-8 max-w-3xl space-y-8">
         <section className="rounded-2xl border border-ink/10 bg-white p-5">
           <h2 className="font-display text-xl">Commerce</h2>
+          <p className="mt-1 text-sm text-ink/50">
+            Preview: Free shipping above ₹{form.free_shipping_threshold || "0"} ·
+            else ₹{form.shipping_fee || "0"} shipping
+          </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs uppercase tracking-wider text-ink/50">
@@ -143,6 +149,8 @@ export default function AdminSettingsPage() {
               </label>
               <Input
                 type="number"
+                min="0"
+                step="1"
                 value={form.free_shipping_threshold}
                 onChange={(e) =>
                   setForm({ ...form, free_shipping_threshold: e.target.value })
@@ -151,10 +159,12 @@ export default function AdminSettingsPage() {
             </div>
             <div>
               <label className="mb-1 block text-xs uppercase tracking-wider text-ink/50">
-                Shipping fee ₹
+                Shipping fee ₹ (when below free threshold)
               </label>
               <Input
                 type="number"
+                min="0"
+                step="1"
                 value={form.shipping_fee}
                 onChange={(e) => setForm({ ...form, shipping_fee: e.target.value })}
               />
