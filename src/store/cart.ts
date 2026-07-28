@@ -7,9 +7,16 @@ import type { CartItem } from "@/types";
 type CartState = {
   items: CartItem[];
   couponCode: string | null;
+  drawerOpen: boolean;
+  openDrawer: () => void;
+  closeDrawer: () => void;
+  toggleDrawer: () => void;
   addItem: (item: CartItem) => { ok: boolean; message: string };
   removeItem: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => { ok: boolean; message: string };
+  setQuantity: (
+    productId: string,
+    quantity: number
+  ) => { ok: boolean; message: string };
   clear: () => void;
   setCouponCode: (code: string | null) => void;
   count: () => number;
@@ -21,6 +28,11 @@ export const useCart = create<CartState>()(
     (set, get) => ({
       items: [],
       couponCode: null,
+      drawerOpen: false,
+
+      openDrawer: () => set({ drawerOpen: true }),
+      closeDrawer: () => set({ drawerOpen: false }),
+      toggleDrawer: () => set((s) => ({ drawerOpen: !s.drawerOpen })),
 
       addItem: (item) => {
         const existing = get().items.find((i) => i.productId === item.productId);
@@ -39,6 +51,7 @@ export const useCart = create<CartState>()(
         set((state) => {
           if (existing) {
             return {
+              drawerOpen: true,
               items: state.items.map((i) =>
                 i.productId === item.productId
                   ? { ...i, ...item, quantity: nextQty }
@@ -46,7 +59,10 @@ export const useCart = create<CartState>()(
               ),
             };
           }
-          return { items: [...state.items, { ...item, quantity: item.quantity }] };
+          return {
+            drawerOpen: true,
+            items: [...state.items, { ...item, quantity: item.quantity }],
+          };
         });
 
         return { ok: true, message: "Added to bag" };
@@ -84,6 +100,11 @@ export const useCart = create<CartState>()(
     }),
     {
       name: "tjn-cart-v1",
+      // Don't persist drawer open state across reloads
+      partialize: (state) => ({
+        items: state.items,
+        couponCode: state.couponCode,
+      }),
     }
   )
 );

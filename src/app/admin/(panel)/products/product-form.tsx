@@ -25,6 +25,8 @@ export function ProductForm({
     slug: product?.slug ?? "",
     description: product?.description ?? "",
     size_info: product?.size_info ?? "",
+    material_info: product?.material_info ?? "",
+    care_notes: product?.care_notes ?? "",
     price: product?.price?.toString() ?? "",
     compare_at_price: product?.compare_at_price?.toString() ?? "",
     stock: product?.stock?.toString() ?? "0",
@@ -68,6 +70,8 @@ export function ProductForm({
       slug: (form.slug || slugify(form.title)).trim(),
       description: form.description,
       size_info: form.size_info.trim() || null,
+      material_info: form.material_info.trim() || null,
+      care_notes: form.care_notes.trim() || null,
       price: Number(form.price),
       compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
       stock: Number(form.stock),
@@ -154,7 +158,27 @@ export function ProductForm({
           <Input
             value={form.size_info}
             onChange={(e) => setForm({ ...form, size_info: e.target.value })}
-            placeholder="e.g. Chain length 16&quot; + 2&quot; extender"
+            placeholder="e.g. Chain length 16 inches + extender"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="mb-1 block text-xs uppercase tracking-wider text-ink/50">
+            Material (optional)
+          </label>
+          <Input
+            value={form.material_info}
+            onChange={(e) => setForm({ ...form, material_info: e.target.value })}
+            placeholder="e.g. Gold-plated brass, anti-tarnish finish"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="mb-1 block text-xs uppercase tracking-wider text-ink/50">
+            Care notes (optional)
+          </label>
+          <Input
+            value={form.care_notes}
+            onChange={(e) => setForm({ ...form, care_notes: e.target.value })}
+            placeholder="e.g. Avoid perfume and water. Wipe with a soft cloth."
           />
         </div>
         <div>
@@ -272,13 +296,43 @@ export function ProductForm({
 
       {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <Button type="submit" disabled={loading}>
-          {loading ? "Saving…" : product ? "Update product" : "Create product"}
+          {loading ? "Saving..." : product ? "Update product" : "Create product"}
         </Button>
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Cancel
         </Button>
+        {product && (
+          <Button
+            type="button"
+            variant="danger"
+            disabled={loading}
+            onClick={async () => {
+              if (
+                !confirm(
+                  `Delete "${product.title}"?\n\nThis cannot be undone.`
+                )
+              ) {
+                return;
+              }
+              setLoading(true);
+              const res = await fetch(`/api/admin/products/${product.id}`, {
+                method: "DELETE",
+              });
+              if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                setError(data.error || "Delete failed");
+                setLoading(false);
+                return;
+              }
+              router.push("/admin/products");
+              router.refresh();
+            }}
+          >
+            Delete product
+          </Button>
+        )}
       </div>
     </form>
   );

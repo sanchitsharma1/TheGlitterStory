@@ -9,15 +9,16 @@ import { cn } from "@/lib/utils";
 
 const nav = [
   { href: "/shop", label: "Shop" },
+  { href: "/shop?sort=newest", label: "New" },
   { href: "/about", label: "Our Story" },
   { href: "/shipping", label: "Shipping" },
-  { href: "/returns", label: "Returns" },
   { href: "/contact", label: "Contact" },
 ];
 
 export function StoreHeader() {
   const [open, setOpen] = useState(false);
   const count = useCart((s) => s.items.reduce((n, i) => n + i.quantity, 0));
+  const openDrawer = useCart((s) => s.openDrawer);
 
   return (
     <header className="sticky top-0 z-50 border-b border-ink/8 bg-ivory/90 backdrop-blur-md">
@@ -68,10 +69,11 @@ export function StoreHeader() {
               <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
             </svg>
           </a>
-          <Link
-            href="/cart"
+          <button
+            type="button"
+            onClick={openDrawer}
             className="relative rounded-full p-2 text-ink transition hover:bg-ink/5"
-            aria-label="Shopping bag"
+            aria-label="Open shopping bag"
           >
             <ShoppingBag size={20} />
             {count > 0 && (
@@ -79,7 +81,7 @@ export function StoreHeader() {
                 {count}
               </span>
             )}
-          </Link>
+          </button>
         </div>
       </div>
 

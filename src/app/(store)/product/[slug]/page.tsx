@@ -1,10 +1,15 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/store/add-to-cart";
 import { ProductCard } from "@/components/store/product-card";
+import { ProductGallery } from "@/components/store/product-gallery";
+import { PdpTrust } from "@/components/store/pdp-trust";
+import { StickyAtc } from "@/components/store/sticky-atc";
+import { ReviewsSection } from "@/components/store/reviews-section";
 import { Badge } from "@/components/ui/badge";
 import { getProductBySlug, getProducts } from "@/lib/catalog";
+import { getApprovedReviews } from "@/lib/reviews";
+import { getSiteConfig } from "@/lib/settings";
 import { formatINR, isOnSale, salePercent } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -30,16 +35,20 @@ export default async function ProductPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const related = (await getProducts({ categorySlug: product.category?.slug }))
-    .filter((p) => p.id !== product.id)
-    .slice(0, 4);
+  const [config, related, productReviews] = await Promise.all([
+    getSiteConfig(),
+    getProducts({ categorySlug: product.category?.slug }).then((list) =>
+      list.filter((p) => p.id !== product.id).slice(0, 4)
+    ),
+    getApprovedReviews({ productId: product.id, limit: 6 }),
+  ]);
 
   const soldOut = product.stock <= 0;
   const onSale = isOnSale(product);
   const images = product.images?.length ? product.images : [];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-10 pb-24 sm:px-6 md:pb-10">
       <div className="mb-6 text-sm text-ink/45">
         <Link href="/shop" className="hover:text-ink">
           Shop
@@ -60,43 +69,11 @@ export default async function ProductPage({
       </div>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        <div className="space-y-3">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-ink/8 bg-stone-100">
-            {images[0] ? (
-              <Image
-                src={images[0]}
-                alt={product.title}
-                fill
-                priority
-                className={soldOut ? "object-cover grayscale" : "object-cover"}
-                sizes="(max-width:1024px) 100vw, 50vw"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-sm uppercase tracking-[0.18em] text-ink/30">
-                Image coming soon
-              </div>
-            )}
-            {soldOut && (
-              <div className="absolute inset-0 flex items-center justify-center bg-ink/25">
-                <Badge tone="sold" className="px-4 py-1 text-sm">
-                  Sold
-                </Badge>
-              </div>
-            )}
-          </div>
-          {images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {images.slice(1, 5).map((src) => (
-                <div
-                  key={src}
-                  className="relative aspect-square overflow-hidden rounded-xl border border-ink/8 bg-stone-100"
-                >
-                  <Image src={src} alt="" fill className="object-cover" sizes="120px" />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ProductGallery
+          images={images}
+          title={product.title}
+          soldOut={soldOut}
+        />
 
         <div>
           {product.category?.name && (
@@ -104,7 +81,9 @@ export default async function ProductPage({
               {product.category.name}
             </p>
           )}
-          <h1 className="mt-2 font-display text-4xl text-ink sm:text-5xl">{product.title}</h1>
+          <h1 className="mt-2 font-display text-4xl text-ink sm:text-5xl">
+            {product.title}
+          </h1>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <span className="text-2xl font-semibold text-ink sm:text-3xl">
@@ -123,8 +102,14 @@ export default async function ProductPage({
           </div>
 
           <p className="mt-2 text-sm text-ink/45">
-            Price inclusive of all charges. Ships across India.
+            Price inclusive of all charges. Free shipping above ₹
+            {config.commerce.free_shipping_threshold}.
           </p>
+
+          <PdpTrust
+            freeShippingThreshold={config.commerce.free_shipping_threshold}
+            returnDays={config.returns.return_window_days}
+          />
 
           <div className="prose-nest mt-6 text-[15px]">
             {product.description.split("\n").map((para, i) => (
@@ -132,18 +117,44 @@ export default async function ProductPage({
             ))}
           </div>
 
-          {product.size_info && (
-            <div className="mt-4 rounded-xl border border-ink/10 bg-white/60 px-4 py-3 text-[15px] text-ink/70">
-              <span className="font-medium text-ink">Size / fit: </span>
-              {product.size_info}
+          {(product.material_info || product.size_info || product.care_notes) && (
+            <div className="mt-5 space-y-2 rounded-2xl border border-ink/10 bg-white/70 px-4 py-4 text-[15px] text-ink/75">
+              {product.material_info && (
+                <p>
+                  <span className="font-medium text-ink">Material: </span>
+                  {product.material_info}
+                </p>
+              )}
+              {product.size_info && (
+                <p>
+                  <span className="font-medium text-ink">Size / fit: </span>
+                  {product.size_info}
+                </p>
+              )}
+              {product.care_notes && (
+                <p>
+                  <span className="font-medium text-ink">Care: </span>
+                  {product.care_notes}
+                </p>
+              )}
             </div>
           )}
 
-          <div className="mt-8">
+          <div className="mt-8" id="pdp-atc">
             <AddToCart product={product} />
           </div>
         </div>
       </div>
+
+      {productReviews.length > 0 && (
+        <div className="mt-16">
+          <ReviewsSection
+            reviews={productReviews}
+            title="Reviews for this piece"
+            subtitle="From customers who own it"
+          />
+        </div>
+      )}
 
       {related.length > 0 && (
         <section className="mt-16">
@@ -155,6 +166,8 @@ export default async function ProductPage({
           </div>
         </section>
       )}
+
+      <StickyAtc product={product} />
     </div>
   );
 }

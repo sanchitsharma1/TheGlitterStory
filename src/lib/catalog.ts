@@ -1,6 +1,8 @@
 import { createClient, createServiceClient, hasServiceRole } from "@/lib/supabase/server";
 import type { Category, Product } from "@/types";
 
+export type ProductSort = "newest" | "price-asc" | "price-desc";
+
 async function db() {
   if (hasServiceRole()) return createServiceClient();
   return createClient();
@@ -24,11 +26,39 @@ export async function getCategories(activeOnly = true): Promise<Category[]> {
   }
 }
 
+/**
+ * Sold-out pieces always sink to the bottom until restocked.
+ * Optional price sort applies within in-stock / sold-out groups.
+ */
+export function sortProducts(
+  products: Product[],
+  sort: ProductSort = "newest"
+): Product[] {
+  const list = [...products];
+
+  list.sort((a, b) => {
+    const aSold = a.stock <= 0 ? 1 : 0;
+    const bSold = b.stock <= 0 ? 1 : 0;
+    if (aSold !== bSold) return aSold - bSold;
+
+    if (sort === "price-asc") return a.price - b.price;
+    if (sort === "price-desc") return b.price - a.price;
+
+    // newest: keep relative created_at order (desc)
+    return (
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  });
+
+  return list;
+}
+
 export async function getProducts(options?: {
   categorySlug?: string;
   featuredOnly?: boolean;
   includeInactive?: boolean;
   search?: string;
+  sort?: ProductSort;
 }): Promise<Product[]> {
   try {
     const supabase = await db();
@@ -50,13 +80,15 @@ export async function getProducts(options?: {
     const { data, error } = await query;
     if (error) return [];
 
-    let products = (data ?? []) as Product[];
+    let products = (data ?? []).map((p) => normalizeProduct(p as Product));
 
     if (options?.categorySlug) {
-      products = products.filter((p) => p.category?.slug === options.categorySlug);
+      products = products.filter(
+        (p) => p.category?.slug === options.categorySlug
+      );
     }
 
-    return products.map(normalizeProduct);
+    return sortProducts(products, options?.sort ?? "newest");
   } catch {
     return [];
   }
@@ -98,6 +130,9 @@ export async function getProductById(id: string): Promise<Product | null> {
 function normalizeProduct(p: Product): Product {
   return {
     ...p,
+    size_info: p.size_info ?? null,
+    material_info: p.material_info ?? null,
+    care_notes: p.care_notes ?? null,
     price: Number(p.price),
     compare_at_price:
       p.compare_at_price === null || p.compare_at_price === undefined
