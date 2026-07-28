@@ -8,6 +8,9 @@ import { getApprovedReviews } from "@/lib/reviews";
 import { getSiteConfig } from "@/lib/settings";
 import { isOnSale } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage() {
   const [config, allProducts, featured, categories, reviews] = await Promise.all([
     getSiteConfig(),
@@ -218,20 +221,32 @@ export default async function HomePage() {
               </a>
             </div>
           </div>
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[2rem] border border-ivory/15 bg-gradient-to-br from-ivory/10 via-transparent to-gold/20">
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-              <Image
-                src="/brand/mark.svg"
-                alt=""
-                width={88}
-                height={88}
-                className="mb-5 brightness-0 invert opacity-90"
-              />
-              <p className="font-display text-3xl text-ivory">The Jewel Nest</p>
-              <p className="mt-3 max-w-xs text-sm text-ivory/60">
-                Pieces that finish the look - after the polish, after the reel,
-                for real life.
-              </p>
+
+          {/* Ivory card keeps the original mark colours readable on the dark band */}
+          <div className="relative mx-auto w-full max-w-sm">
+            <div className="rounded-[2rem] border border-gold/40 bg-gradient-to-br from-ivory via-white to-gold/15 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.35)] sm:p-10">
+              <div className="flex flex-col items-center text-center">
+                <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-2xl border border-ink/8 bg-white shadow-sm">
+                  <Image
+                    src="/brand/mark.svg"
+                    alt="The Jewel Nest"
+                    width={72}
+                    height={72}
+                    className="h-16 w-16"
+                  />
+                </div>
+                <p className="font-display text-3xl text-ink sm:text-4xl">
+                  The Jewel Nest
+                </p>
+                <div className="my-4 h-px w-14 bg-gold" />
+                <p className="max-w-xs text-[15px] leading-relaxed text-ink/60">
+                  Pieces that finish the look - after the polish, after the reel,
+                  for real life.
+                </p>
+                <p className="mt-5 text-[10px] uppercase tracking-[0.22em] text-ink/40">
+                  A house of {config.brand.parent_brand}
+                </p>
+              </div>
             </div>
           </div>
         </div>

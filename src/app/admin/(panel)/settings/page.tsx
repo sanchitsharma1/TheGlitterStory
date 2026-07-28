@@ -43,7 +43,7 @@ export default function AdminSettingsPage() {
           free_shipping_threshold: String(c.free_shipping_threshold ?? 600),
           shipping_fee: String(c.shipping_fee ?? 120),
           cod_min_order: String(c.cod_min_order ?? 299),
-          allow_cod: c.allow_cod !== false,
+          allow_cod: Boolean(c.allow_cod),
           allow_razorpay: c.allow_razorpay !== false,
           return_window_days: String(r.return_window_days ?? 7),
           policy_summary: r.policy_summary ?? "",
@@ -108,7 +108,16 @@ export default function AdminSettingsPage() {
       setError(data.error || "Save failed (super admin only)");
       return;
     }
-    setMsg("Settings saved");
+    // Keep form in sync with server-generated shipping summary
+    if (data.policies?.shipping_summary) {
+      setForm((f) => ({
+        ...f,
+        shipping_summary: data.policies.shipping_summary,
+      }));
+    }
+    setMsg(
+      "Settings saved. Banner, footer, cart and shipping page now use the new rates."
+    );
   }
 
   if (loading) {
@@ -119,7 +128,9 @@ export default function AdminSettingsPage() {
     <div>
       <h1 className="font-display text-3xl">Settings</h1>
       <p className="text-sm text-ink/55">
-        Super admin controls - shipping, COD, return window, contact and policies
+        Super admin controls - shipping, payments, return window, contact and
+        policies. Rate numbers always update the top banner and shipping page
+        automatically.
       </p>
 
       <form onSubmit={save} className="mt-8 max-w-3xl space-y-8">

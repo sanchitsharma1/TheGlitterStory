@@ -21,7 +21,7 @@ export default function CartPage() {
   const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
-    fetch("/api/settings")
+    fetch("/api/settings", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         if (data.commerce) setSettings(data.commerce);

@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { formatINR } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { calculateShipping } from "@/lib/commerce/pricing";
-import { DEFAULT_COMMERCE } from "@/types";
+import { DEFAULT_COMMERCE, type CommerceSettings } from "@/types";
 
 export function CartDrawer() {
   const {
@@ -19,9 +19,19 @@ export function CartDrawer() {
     setQuantity,
     subtotal,
   } = useCart();
+  const [commerce, setCommerce] = useState<CommerceSettings>(DEFAULT_COMMERCE);
+
+  useEffect(() => {
+    fetch("/api/settings", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.commerce) setCommerce(data.commerce);
+      })
+      .catch(() => undefined);
+  }, [drawerOpen]);
 
   const sub = subtotal();
-  const shipping = calculateShipping(sub, DEFAULT_COMMERCE);
+  const shipping = calculateShipping(sub, commerce);
   const total = sub + shipping;
 
   useEffect(() => {
@@ -70,11 +80,7 @@ export function CartDrawer() {
           {items.length === 0 ? (
             <div className="py-16 text-center">
               <p className="font-display text-xl text-ink">Your bag is empty</p>
-              <Button
-                className="mt-6"
-                variant="secondary"
-                onClick={closeDrawer}
-              >
+              <Button className="mt-6" variant="secondary" onClick={closeDrawer}>
                 Continue shopping
               </Button>
             </div>
@@ -174,7 +180,7 @@ export function CartDrawer() {
               </div>
             </div>
             <p className="mt-2 text-xs text-ink/45">
-              Free shipping above ₹{DEFAULT_COMMERCE.free_shipping_threshold}
+              Free shipping above ₹{commerce.free_shipping_threshold}
             </p>
             <Link href="/checkout" onClick={closeDrawer} className="mt-4 block">
               <Button size="lg" className="w-full">

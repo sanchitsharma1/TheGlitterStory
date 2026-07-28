@@ -42,7 +42,7 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    fetch("/api/settings")
+    fetch("/api/settings", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         if (data.commerce) setSettings(data.commerce);

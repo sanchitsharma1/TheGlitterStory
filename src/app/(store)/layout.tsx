@@ -4,6 +4,10 @@ import { AnnouncementBar } from "@/components/store/announcement-bar";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { getSiteConfig } from "@/lib/settings";
 
+// Always read live site_settings (shipping banner, returns, etc.)
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function StoreLayout({
   children,
 }: {
