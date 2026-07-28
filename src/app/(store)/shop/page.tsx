@@ -1,5 +1,6 @@
 import { ProductCard } from "@/components/store/product-card";
-import { getCategories, getProducts } from "@/lib/catalog";
+import { ShopSort } from "@/components/store/shop-sort";
+import { getCategories, getProducts, type ProductSort } from "@/lib/catalog";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -8,36 +9,57 @@ export const metadata = {
   description: "Browse modern jewellery from The Jewel Nest.",
 };
 
+function parseSort(value?: string): ProductSort {
+  if (value === "price-asc" || value === "price-desc" || value === "newest") {
+    return value;
+  }
+  return "newest";
+}
+
+function shopHref(opts: { category?: string; sort?: string }) {
+  const params = new URLSearchParams();
+  if (opts.category) params.set("category", opts.category);
+  if (opts.sort && opts.sort !== "newest") params.set("sort", opts.sort);
+  const q = params.toString();
+  return q ? `/shop?${q}` : "/shop";
+}
+
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; sort?: string }>;
 }) {
   const params = await searchParams;
+  const sort = parseSort(params.sort);
   const [categories, products] = await Promise.all([
     getCategories(),
     getProducts({
       categorySlug: params.category,
       search: params.q,
+      sort,
     }),
   ]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-dark sm:text-[13px]">
-          Collection
-        </p>
-        <h1 className="font-display text-4xl text-ink sm:text-5xl">Shop</h1>
-        <p className="mt-2 text-[15px] text-ink/55">
-          {products.length} piece{products.length === 1 ? "" : "s"}
-          {params.category ? ` in ${params.category}` : ""}
-        </p>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-dark sm:text-[13px]">
+            Collection
+          </p>
+          <h1 className="font-display text-4xl text-ink sm:text-5xl">Shop</h1>
+          <p className="mt-2 text-[15px] text-ink/55">
+            {products.length} piece{products.length === 1 ? "" : "s"}
+            {params.category ? ` in ${params.category}` : ""}
+          </p>
+        </div>
+
+        <ShopSort category={params.category} sort={sort} />
       </div>
 
       <div className="mb-8 flex flex-wrap gap-2">
         <Link
-          href="/shop"
+          href={shopHref({ sort })}
           className={cn(
             "rounded-full border px-4 py-2 text-sm uppercase tracking-[0.12em] transition",
             !params.category
@@ -50,7 +72,7 @@ export default async function ShopPage({
         {categories.map((cat) => (
           <Link
             key={cat.id}
-            href={`/shop?category=${cat.slug}`}
+            href={shopHref({ category: cat.slug, sort })}
             className={cn(
               "rounded-full border px-4 py-2 text-sm uppercase tracking-[0.12em] transition",
               params.category === cat.slug

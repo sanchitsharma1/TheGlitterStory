@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/store/add-to-cart";
 import { ProductCard } from "@/components/store/product-card";
+import { ProductGallery } from "@/components/store/product-gallery";
 import { Badge } from "@/components/ui/badge";
 import { getProductBySlug, getProducts } from "@/lib/catalog";
 import { formatINR, isOnSale, salePercent } from "@/lib/utils";
@@ -60,43 +60,11 @@ export default async function ProductPage({
       </div>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        <div className="space-y-3">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-ink/8 bg-stone-100">
-            {images[0] ? (
-              <Image
-                src={images[0]}
-                alt={product.title}
-                fill
-                priority
-                className={soldOut ? "object-cover grayscale" : "object-cover"}
-                sizes="(max-width:1024px) 100vw, 50vw"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-sm uppercase tracking-[0.18em] text-ink/30">
-                Image coming soon
-              </div>
-            )}
-            {soldOut && (
-              <div className="absolute inset-0 flex items-center justify-center bg-ink/25">
-                <Badge tone="sold" className="px-4 py-1 text-sm">
-                  Sold
-                </Badge>
-              </div>
-            )}
-          </div>
-          {images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {images.slice(1, 5).map((src) => (
-                <div
-                  key={src}
-                  className="relative aspect-square overflow-hidden rounded-xl border border-ink/8 bg-stone-100"
-                >
-                  <Image src={src} alt="" fill className="object-cover" sizes="120px" />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ProductGallery
+          images={images}
+          title={product.title}
+          soldOut={soldOut}
+        />
 
         <div>
           {product.category?.name && (
@@ -104,7 +72,9 @@ export default async function ProductPage({
               {product.category.name}
             </p>
           )}
-          <h1 className="mt-2 font-display text-4xl text-ink sm:text-5xl">{product.title}</h1>
+          <h1 className="mt-2 font-display text-4xl text-ink sm:text-5xl">
+            {product.title}
+          </h1>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <span className="text-2xl font-semibold text-ink sm:text-3xl">
