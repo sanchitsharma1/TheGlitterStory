@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/store/cart";
 import { formatINR, indianStates } from "@/lib/utils";
-import { DEFAULT_COMMERCE, type CommerceSettings } from "@/types";
 import { calculateShipping, cartSubtotal } from "@/lib/commerce/pricing";
+import { useCommerceSettings } from "@/hooks/use-commerce-settings";
 import { Lock, ShieldCheck, CreditCard } from "lucide-react";
 
 declare global {
@@ -24,7 +24,7 @@ declare global {
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, couponCode, clear } = useCart();
-  const [settings, setSettings] = useState<CommerceSettings>(DEFAULT_COMMERCE);
+  const { commerce: settings } = useCommerceSettings();
   const [discount, setDiscount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,15 +40,6 @@ export default function CheckoutPage() {
     pincode: "",
     customer_note: "",
   });
-
-  useEffect(() => {
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.commerce) setSettings(data.commerce);
-      })
-      .catch(() => undefined);
-  }, []);
 
   useEffect(() => {
     if (!couponCode || items.length === 0) {

@@ -45,7 +45,11 @@ export function StoreFooter({ config }: { config: SiteConfig }) {
             <li>Ships across {commerce.service_region}</li>
             <li>Free shipping above ₹{commerce.free_shipping_threshold}</li>
             <li>Else flat ₹{commerce.shipping_fee} shipping</li>
-            <li>COD from ₹{commerce.cod_min_order}</li>
+            {commerce.allow_cod ? (
+              <li>COD from ₹{commerce.cod_min_order}</li>
+            ) : (
+              <li>Secure online payment</li>
+            )}
             {contact.instagram && (
               <li>
                 <a

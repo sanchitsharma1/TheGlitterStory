@@ -230,7 +230,59 @@ export default function AdminCategoriesPage() {
         </form>
       )}
 
-      <div className="mt-8 overflow-x-auto rounded-2xl border border-ink/10 bg-white">
+      {/* Mobile cards */}
+      <div className="mt-6 space-y-3 md:hidden">
+        {categories.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-ink/15 px-4 py-10 text-center text-sm text-ink/50">
+            No categories yet.
+          </div>
+        ) : (
+          categories.map((c) => (
+            <div
+              key={c.id}
+              className={`rounded-2xl border bg-white p-4 shadow-sm ${
+                editingId === c.id ? "border-gold/50 bg-gold/5" : "border-ink/10"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium text-ink">{c.name}</p>
+                  <p className="mt-0.5 text-xs text-ink/45">{c.slug}</p>
+                </div>
+                <span className="text-xs text-ink/50">
+                  {c.is_active ? "Active" : "Hidden"}
+                </span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2 border-t border-ink/8 pt-3">
+                <button
+                  type="button"
+                  className="min-h-10 rounded-full border border-ink/15 px-4 text-xs uppercase tracking-wider text-ink/70"
+                  onClick={() => startEdit(c)}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  className="min-h-10 rounded-full border border-ink/15 px-4 text-xs uppercase tracking-wider text-ink/70"
+                  onClick={() => toggleActive(c)}
+                >
+                  {c.is_active ? "Hide" : "Show"}
+                </button>
+                <button
+                  type="button"
+                  className="min-h-10 rounded-full border border-red-200 px-4 text-xs uppercase tracking-wider text-red-600"
+                  onClick={() => deleteCategory(c)}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="mt-8 hidden overflow-x-auto rounded-2xl border border-ink/10 bg-white md:block">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="border-b border-ink/10 bg-ivory/80 text-xs uppercase tracking-wider text-ink/50">
             <tr>

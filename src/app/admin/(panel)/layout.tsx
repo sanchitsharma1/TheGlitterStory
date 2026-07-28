@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getStaffProfile } from "@/lib/auth/staff";
-import { AdminSidebar } from "@/components/admin/sidebar";
+import { AdminShell } from "@/components/admin/admin-shell";
 
 export default async function AdminPanelLayout({
   children,
@@ -13,12 +13,5 @@ export default async function AdminPanelLayout({
     redirect("/admin/login");
   }
 
-  return (
-    <div className="flex min-h-screen bg-ivory text-ink">
-      <AdminSidebar staff={staff} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <main className="flex-1 p-6 sm:p-8">{children}</main>
-      </div>
-    </div>
-  );
+  return <AdminShell staff={staff}>{children}</AdminShell>;
 }

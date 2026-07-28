@@ -12,6 +12,9 @@ import { getApprovedReviews } from "@/lib/reviews";
 import { getSiteConfig } from "@/lib/settings";
 import { formatINR, isOnSale, salePercent } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({
   params,
 }: {
@@ -107,8 +110,11 @@ export default async function ProductPage({
           </p>
 
           <PdpTrust
-            freeShippingThreshold={config.commerce.free_shipping_threshold}
-            returnDays={config.returns.return_window_days}
+            freeShippingThreshold={Number(
+              config.commerce.free_shipping_threshold
+            )}
+            shippingFee={Number(config.commerce.shipping_fee)}
+            returnDays={Number(config.returns.return_window_days)}
           />
 
           <div className="prose-nest mt-6 text-[15px]">

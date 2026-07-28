@@ -43,7 +43,7 @@ export default function AdminSettingsPage() {
           free_shipping_threshold: String(c.free_shipping_threshold ?? 600),
           shipping_fee: String(c.shipping_fee ?? 120),
           cod_min_order: String(c.cod_min_order ?? 299),
-          allow_cod: c.allow_cod !== false,
+          allow_cod: Boolean(c.allow_cod),
           allow_razorpay: c.allow_razorpay !== false,
           return_window_days: String(r.return_window_days ?? 7),
           policy_summary: r.policy_summary ?? "",
@@ -108,7 +108,18 @@ export default function AdminSettingsPage() {
       setError(data.error || "Save failed (super admin only)");
       return;
     }
-    setMsg("Settings saved");
+    // Keep form in sync with server-generated shipping summary
+    if (data.policies?.shipping_summary) {
+      setForm((f) => ({
+        ...f,
+        shipping_summary: data.policies.shipping_summary,
+      }));
+    }
+    const threshold = data.commerce?.free_shipping_threshold ?? form.free_shipping_threshold;
+    const fee = data.commerce?.shipping_fee ?? form.shipping_fee;
+    setMsg(
+      `Settings saved. Live everywhere: free shipping ≥ ₹${threshold}, else ₹${fee} shipping (banner, footer, cart, checkout, product page, shipping page).`
+    );
   }
 
   if (loading) {
@@ -119,19 +130,28 @@ export default function AdminSettingsPage() {
     <div>
       <h1 className="font-display text-3xl">Settings</h1>
       <p className="text-sm text-ink/55">
-        Super admin controls - shipping, COD, return window, contact and policies
+        Super admin controls - shipping, payments, return window, contact and
+        policies. Rate numbers always update the top banner and shipping page
+        automatically.
       </p>
 
-      <form onSubmit={save} className="mt-8 max-w-3xl space-y-8">
-        <section className="rounded-2xl border border-ink/10 bg-white p-5">
+      <form onSubmit={save} className="mt-6 max-w-3xl space-y-6 sm:mt-8 sm:space-y-8">
+        <section className="rounded-2xl border border-ink/10 bg-white p-4 sm:p-5">
           <h2 className="font-display text-xl">Commerce</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <p className="mt-1 text-sm text-ink/50">
+            Preview: Free shipping above ₹{form.free_shipping_threshold || "0"} ·
+            else ₹{form.shipping_fee || "0"} shipping
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs uppercase tracking-wider text-ink/50">
                 Free shipping above ₹
               </label>
               <Input
                 type="number"
+                min="0"
+                step="1"
+                inputMode="numeric"
                 value={form.free_shipping_threshold}
                 onChange={(e) =>
                   setForm({ ...form, free_shipping_threshold: e.target.value })
@@ -144,16 +164,20 @@ export default function AdminSettingsPage() {
               </label>
               <Input
                 type="number"
+                min="0"
+                step="1"
+                inputMode="numeric"
                 value={form.shipping_fee}
                 onChange={(e) => setForm({ ...form, shipping_fee: e.target.value })}
               />
             </div>
-            <div>
+            <div className="sm:col-span-2 lg:col-span-1">
               <label className="mb-1 block text-xs uppercase tracking-wider text-ink/50">
                 COD minimum ₹
               </label>
               <Input
                 type="number"
+                inputMode="numeric"
                 value={form.cod_min_order}
                 onChange={(e) => setForm({ ...form, cod_min_order: e.target.value })}
               />

@@ -262,8 +262,9 @@ export const DEFAULT_BRAND: BrandSettings = {
 };
 
 export const DEFAULT_POLICIES: PolicySettings = {
+  // Rates are always overwritten from live commerce settings in getSiteConfig()
   shipping_summary:
-    "We currently ship across India only. Orders above ₹600 enjoy free shipping. Orders below ₹600 include a flat shipping fee of ₹120. Delivery timelines typically range from 4-10 business days depending on your pincode.",
+    "We currently ship across India only. Shipping rates are calculated at checkout based on order value. Delivery timelines typically range from 4-10 business days depending on your pincode.",
   privacy_summary:
     "We collect only the information needed to fulfil your order (name, phone, email, and delivery address). We do not sell your data. Payment card details are processed securely by Razorpay and never stored on our servers.",
   terms_summary:

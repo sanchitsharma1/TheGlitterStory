@@ -2,15 +2,21 @@ import { Gift, Lock, Package, RotateCcw } from "lucide-react";
 
 export function PdpTrust({
   freeShippingThreshold,
+  shippingFee,
   returnDays,
 }: {
   freeShippingThreshold: number;
+  shippingFee: number;
   returnDays: number;
 }) {
   const items = [
     {
       icon: Package,
       label: `Free ship ₹${freeShippingThreshold}+`,
+    },
+    {
+      icon: Package,
+      label: `Else ₹${shippingFee} ship`,
     },
     {
       icon: Lock,
@@ -27,7 +33,7 @@ export function PdpTrust({
   ];
 
   return (
-    <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       {items.map(({ icon: Icon, label }) => (
         <div
           key={label}
