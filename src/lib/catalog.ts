@@ -130,6 +130,9 @@ export async function getProductById(id: string): Promise<Product | null> {
 function normalizeProduct(p: Product): Product {
   return {
     ...p,
+    size_info: p.size_info ?? null,
+    material_info: p.material_info ?? null,
+    care_notes: p.care_notes ?? null,
     price: Number(p.price),
     compare_at_price:
       p.compare_at_price === null || p.compare_at_price === undefined

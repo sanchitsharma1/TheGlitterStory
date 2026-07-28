@@ -3,8 +3,13 @@ import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/store/add-to-cart";
 import { ProductCard } from "@/components/store/product-card";
 import { ProductGallery } from "@/components/store/product-gallery";
+import { PdpTrust } from "@/components/store/pdp-trust";
+import { StickyAtc } from "@/components/store/sticky-atc";
+import { ReviewsSection } from "@/components/store/reviews-section";
 import { Badge } from "@/components/ui/badge";
 import { getProductBySlug, getProducts } from "@/lib/catalog";
+import { getApprovedReviews } from "@/lib/reviews";
+import { getSiteConfig } from "@/lib/settings";
 import { formatINR, isOnSale, salePercent } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -30,16 +35,20 @@ export default async function ProductPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const related = (await getProducts({ categorySlug: product.category?.slug }))
-    .filter((p) => p.id !== product.id)
-    .slice(0, 4);
+  const [config, related, productReviews] = await Promise.all([
+    getSiteConfig(),
+    getProducts({ categorySlug: product.category?.slug }).then((list) =>
+      list.filter((p) => p.id !== product.id).slice(0, 4)
+    ),
+    getApprovedReviews({ productId: product.id, limit: 6 }),
+  ]);
 
   const soldOut = product.stock <= 0;
   const onSale = isOnSale(product);
   const images = product.images?.length ? product.images : [];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-10 pb-24 sm:px-6 md:pb-10">
       <div className="mb-6 text-sm text-ink/45">
         <Link href="/shop" className="hover:text-ink">
           Shop
@@ -93,8 +102,14 @@ export default async function ProductPage({
           </div>
 
           <p className="mt-2 text-sm text-ink/45">
-            Price inclusive of all charges. Ships across India.
+            Price inclusive of all charges. Free shipping above ₹
+            {config.commerce.free_shipping_threshold}.
           </p>
+
+          <PdpTrust
+            freeShippingThreshold={config.commerce.free_shipping_threshold}
+            returnDays={config.returns.return_window_days}
+          />
 
           <div className="prose-nest mt-6 text-[15px]">
             {product.description.split("\n").map((para, i) => (
@@ -102,18 +117,44 @@ export default async function ProductPage({
             ))}
           </div>
 
-          {product.size_info && (
-            <div className="mt-4 rounded-xl border border-ink/10 bg-white/60 px-4 py-3 text-[15px] text-ink/70">
-              <span className="font-medium text-ink">Size / fit: </span>
-              {product.size_info}
+          {(product.material_info || product.size_info || product.care_notes) && (
+            <div className="mt-5 space-y-2 rounded-2xl border border-ink/10 bg-white/70 px-4 py-4 text-[15px] text-ink/75">
+              {product.material_info && (
+                <p>
+                  <span className="font-medium text-ink">Material: </span>
+                  {product.material_info}
+                </p>
+              )}
+              {product.size_info && (
+                <p>
+                  <span className="font-medium text-ink">Size / fit: </span>
+                  {product.size_info}
+                </p>
+              )}
+              {product.care_notes && (
+                <p>
+                  <span className="font-medium text-ink">Care: </span>
+                  {product.care_notes}
+                </p>
+              )}
             </div>
           )}
 
-          <div className="mt-8">
+          <div className="mt-8" id="pdp-atc">
             <AddToCart product={product} />
           </div>
         </div>
       </div>
+
+      {productReviews.length > 0 && (
+        <div className="mt-16">
+          <ReviewsSection
+            reviews={productReviews}
+            title="Reviews for this piece"
+            subtitle="From customers who own it"
+          />
+        </div>
+      )}
 
       {related.length > 0 && (
         <section className="mt-16">
@@ -125,6 +166,8 @@ export default async function ProductPage({
           </div>
         </section>
       )}
+
+      <StickyAtc product={product} />
     </div>
   );
 }

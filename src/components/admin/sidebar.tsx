@@ -13,6 +13,7 @@ import {
   Bell,
   LogOut,
   Store,
+  MessageSquareQuote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -26,6 +27,7 @@ const links = [
   { href: "/admin/categories", label: "Categories", icon: Tags, permission: "categories" as const },
   { href: "/admin/coupons", label: "Coupons", icon: Ticket, permission: "coupons" as const },
   { href: "/admin/notifications", label: "Alerts", icon: Bell, permission: "dashboard" as const },
+  { href: "/admin/reviews", label: "Reviews", icon: MessageSquareQuote, permission: "dashboard" as const },
   { href: "/admin/staff", label: "Staff", icon: Users, permission: "staff" as const, superOnly: true },
   { href: "/admin/settings", label: "Settings", icon: Settings, permission: "settings" as const },
 ];

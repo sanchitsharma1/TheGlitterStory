@@ -40,6 +40,10 @@ export type Product = {
   slug: string;
   description: string;
   size_info: string | null;
+  /** e.g. Gold-plated brass, sterling silver */
+  material_info: string | null;
+  /** Care / allergy notes */
+  care_notes: string | null;
   price: number;
   compare_at_price: number | null;
   sale_starts_at: string | null;
@@ -55,6 +59,16 @@ export type Product = {
   created_at: string;
   updated_at: string;
   category?: Category | null;
+};
+
+export type Review = {
+  id: string;
+  product_id: string | null;
+  customer_name: string;
+  rating: number;
+  body: string;
+  is_approved: boolean;
+  created_at: string;
 };
 
 export type Coupon = {

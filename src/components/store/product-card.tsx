@@ -15,9 +15,10 @@ import { ShoppingBag } from "lucide-react";
 export function ProductCard({ product }: { product: Product }) {
   const soldOut = product.stock <= 0;
   const onSale = isOnSale(product);
-  const image = product.images?.[0];
+  const primary = product.images?.[0];
+  const secondary = product.images?.[1];
   const addItem = useCart((s) => s.addItem);
-  const [toast, setToast] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
   function handleQuickAdd(e: React.MouseEvent) {
@@ -27,11 +28,11 @@ export function ProductCard({ product }: { product: Product }) {
 
     setAdding(true);
     const result = addItem(mapProductToCartItem(product, 1));
-    setToast(result.message);
+    setMsg(result.ok ? null : result.message);
     setTimeout(() => {
-      setToast(null);
+      setMsg(null);
       setAdding(false);
-    }, 1800);
+    }, 1600);
   }
 
   return (
@@ -45,17 +46,34 @@ export function ProductCard({ product }: { product: Product }) {
         href={`/product/${product.slug}`}
         className="relative aspect-[4/5] overflow-hidden bg-stone-100"
       >
-        {image ? (
-          <Image
-            src={image}
-            alt={product.title}
-            fill
-            className={cn(
-              "object-cover transition duration-500 group-hover:scale-105",
-              soldOut && "grayscale"
+        {primary ? (
+          <>
+            <Image
+              src={primary}
+              alt={product.title}
+              fill
+              className={cn(
+                "object-cover transition duration-500",
+                secondary
+                  ? "group-hover:opacity-0"
+                  : "group-hover:scale-105",
+                soldOut && "grayscale"
+              )}
+              sizes="(max-width:768px) 50vw, 25vw"
+            />
+            {secondary && (
+              <Image
+                src={secondary}
+                alt=""
+                fill
+                className={cn(
+                  "object-cover opacity-0 transition duration-500 group-hover:opacity-100 group-hover:scale-105",
+                  soldOut && "grayscale"
+                )}
+                sizes="(max-width:768px) 50vw, 25vw"
+              />
             )}
-            sizes="(max-width:768px) 50vw, 25vw"
-          />
+          </>
         ) : (
           <div className="flex h-full items-center justify-center text-sm uppercase tracking-[0.18em] text-ink/30">
             The Jewel Nest
@@ -117,18 +135,8 @@ export function ProductCard({ product }: { product: Product }) {
               {adding ? "Added" : "Add to bag"}
             </Button>
           )}
-          {toast && (
-            <p
-              className={cn(
-                "mt-1.5 text-center text-xs",
-                toast.toLowerCase().includes("sold") ||
-                  toast.toLowerCase().includes("only")
-                  ? "text-red-600"
-                  : "text-emerald-700"
-              )}
-            >
-              {toast}
-            </p>
+          {msg && (
+            <p className="mt-1.5 text-center text-xs text-red-600">{msg}</p>
           )}
         </div>
       </div>
