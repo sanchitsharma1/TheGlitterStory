@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ProductCard } from "@/components/store/product-card";
+import { CategoryTiles } from "@/components/store/category-tiles";
 import { ReviewsSection } from "@/components/store/reviews-section";
 import { Button } from "@/components/ui/button";
 import { getCategories, getProducts } from "@/lib/catalog";
@@ -92,36 +93,27 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* Categories */}
+      {/* Categories — compact image tiles */}
       {categories.length > 0 && (
         <section className="border-t border-ink/8 bg-white/30">
-          <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-            <div className="mb-6 flex items-end justify-between gap-4">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
+            <div className="mb-5 flex items-end justify-between gap-4 sm:mb-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold-dark sm:text-[13px]">
                   Collections
                 </p>
-                <h2 className="font-display text-3xl text-ink sm:text-4xl">
+                <h2 className="font-display text-2xl text-ink sm:text-3xl">
                   Shop by category
                 </h2>
               </div>
+              <Link
+                href="/shop"
+                className="text-sm uppercase tracking-[0.14em] text-ink/60 hover:text-ink"
+              >
+                View all
+              </Link>
             </div>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/shop?category=${cat.slug}`}
-                  className="group rounded-2xl border border-ink/10 bg-ivory p-5 transition hover:border-gold/50 hover:shadow-sm"
-                >
-                  <p className="font-display text-xl text-ink sm:text-2xl">
-                    {cat.name}
-                  </p>
-                  <p className="mt-1 line-clamp-2 text-sm text-ink/50">
-                    {cat.description}
-                  </p>
-                </Link>
-              ))}
-            </div>
+            <CategoryTiles categories={categories} />
           </div>
         </section>
       )}

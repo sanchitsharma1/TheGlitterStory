@@ -105,8 +105,7 @@ export default async function ProductPage({
           </div>
 
           <p className="mt-2 text-sm text-ink/45">
-            Price inclusive of all charges. Free shipping above ₹
-            {config.commerce.free_shipping_threshold}.
+            Price inclusive of all charges.
           </p>
 
           <PdpTrust
@@ -117,7 +116,7 @@ export default async function ProductPage({
             returnDays={Number(config.returns.return_window_days)}
           />
 
-          <div className="prose-nest mt-6 text-[15px]">
+          <div className="prose-nest mt-8 text-[15px]">
             {product.description.split("\n").map((para, i) => (
               <p key={i}>{para}</p>
             ))}

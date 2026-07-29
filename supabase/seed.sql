@@ -57,9 +57,18 @@ insert into site_settings (key, value) values
 on conflict (key) do update set value = excluded.value, updated_at = now();
 
 -- Sample categories (optional demo data - safe to keep or delete)
-insert into categories (name, slug, description, sort_order) values
-  ('Necklaces', 'necklaces', 'Chains, pendants, and statement collars.', 1),
-  ('Earrings', 'earrings', 'Hoops, studs, drops, and everyday sparkle.', 2),
-  ('Bracelets', 'bracelets', 'Cuffs, chains, and stackable pieces.', 3),
-  ('Anklets', 'anklets', 'Delicate details for every step.', 4)
-on conflict (slug) do nothing;
+-- Images: verified subjects (anklet = foot, ring = bands — not necklace shots)
+insert into categories (name, slug, description, sort_order, image_url) values
+  ('Necklaces', 'necklaces', 'Chains, pendants, and statement collars.', 1,
+   'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=900&q=80'),
+  ('Earrings', 'earrings', 'Hoops, studs, drops, and everyday sparkle.', 2,
+   'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=900&q=80'),
+  ('Bracelets', 'bracelets', 'Cuffs, chains, and stackable pieces.', 3,
+   'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=900&q=80'),
+  ('Anklets', 'anklets', 'Delicate details for every step.', 4,
+   'https://images.unsplash.com/photo-1635770607507-beb7d7972491?w=900&q=80'),
+  ('Rings', 'rings', 'Bands, stacks, and everyday shine.', 5,
+   'https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?w=900&q=80')
+on conflict (slug) do update set
+  image_url = excluded.image_url,
+  description = coalesce(nullif(categories.description, ''), excluded.description);

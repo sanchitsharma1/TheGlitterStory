@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStaffProfile, canAccess } from "@/lib/auth/staff";
 import { createServiceClient } from "@/lib/supabase/server";
+import { updateProduct } from "@/lib/admin/product-payload";
 
 export async function PATCH(
   request: Request,
@@ -13,10 +14,9 @@ export async function PATCH(
 
   try {
     const { id } = await params;
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const supabase = createServiceClient();
 
-    // Notify if stock set to 0
     if (body.stock === 0) {
       await supabase.from("admin_notifications").insert({
         type: "out_of_stock",
@@ -26,13 +26,24 @@ export async function PATCH(
       });
     }
 
-    const { error } = await supabase.from("products").update(body).eq("id", id);
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    const result = await updateProduct(supabase, id, body);
+    if (result.error) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
     }
-    return NextResponse.json({ ok: true });
+
+    return NextResponse.json({
+      ok: true,
+      partial:
+        !result.usedExtended &&
+        (body.material_info || body.care_notes)
+          ? "Product saved. material_info/care_notes were skipped (run DB migration to enable)."
+          : undefined,
+    });
   } catch {
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update product" },
+      { status: 500 }
+    );
   }
 }
 

@@ -7,7 +7,6 @@ import type { Product } from "@/types";
 import { formatINR, isOnSale, salePercent } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useCart } from "@/store/cart";
 import { mapProductToCartItem } from "@/lib/commerce/pricing";
 import { ShoppingBag } from "lucide-react";
@@ -54,9 +53,7 @@ export function ProductCard({ product }: { product: Product }) {
               fill
               className={cn(
                 "object-cover transition duration-500",
-                secondary
-                  ? "group-hover:opacity-0"
-                  : "group-hover:scale-105",
+                secondary ? "group-hover:opacity-0" : "group-hover:scale-105",
                 soldOut && "grayscale"
               )}
               sizes="(max-width:768px) 50vw, 25vw"
@@ -89,7 +86,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
       </Link>
 
-      <div className="flex flex-1 flex-col gap-1 p-3 sm:p-4">
+      <div className="flex flex-1 flex-col gap-1 px-3 pb-3 pt-3 sm:px-4 sm:pt-4">
         {product.category?.name && (
           <p className="text-xs uppercase tracking-[0.16em] text-ink/45">
             {product.category.name}
@@ -110,45 +107,44 @@ export function ProductCard({ product }: { product: Product }) {
             </span>
           )}
         </div>
-
-        <div className="mt-auto pt-3">
-          {soldOut ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="w-full cursor-not-allowed grayscale"
-              disabled
-            >
-              Sold out
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              className="w-full"
-              onClick={handleQuickAdd}
-              disabled={adding}
-            >
-              <ShoppingBag size={14} />
-              {adding ? "Added" : "Add to bag"}
-            </Button>
-          )}
-          {msg && (
-            <p
-              className={cn(
-                "mt-1.5 text-center text-xs",
-                msg.toLowerCase().includes("added")
-                  ? "text-emerald-700"
-                  : "text-red-600"
-              )}
-            >
-              {msg}
-            </p>
-          )}
-        </div>
+        {msg && (
+          <p
+            className={cn(
+              "pt-1 text-center text-xs sm:text-sm",
+              msg.toLowerCase().includes("added")
+                ? "text-emerald-700"
+                : "text-red-600"
+            )}
+          >
+            {msg}
+          </p>
+        )}
       </div>
+
+      {/* Full-bleed bottom bar - shares card corners via overflow-hidden */}
+      {soldOut ? (
+        <button
+          type="button"
+          disabled
+          className="mt-auto flex h-12 w-full cursor-not-allowed items-center justify-center gap-2 border-t border-ink/10 bg-ink/10 text-sm font-medium tracking-wide text-ink/45 grayscale sm:h-[3.25rem] sm:text-[15px]"
+        >
+          Sold out
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={handleQuickAdd}
+          disabled={adding}
+          className={cn(
+            "mt-auto flex h-12 w-full items-center justify-center gap-2 border-t border-ink/15 bg-ink text-sm font-medium tracking-wide text-ivory transition sm:h-[3.25rem] sm:text-[15px]",
+            "hover:bg-ink/90 active:bg-ink/85",
+            "disabled:pointer-events-none disabled:opacity-70"
+          )}
+        >
+          <ShoppingBag size={16} className="shrink-0 sm:size-[17px]" />
+          {adding ? "Added" : "Add to bag"}
+        </button>
+      )}
     </article>
   );
 }

@@ -96,6 +96,7 @@ export function ProductForm({
         setLoading(false);
         return;
       }
+      // Product saved (material/care may be skipped until DB migration is applied)
       router.push("/admin/products");
       router.refresh();
     } catch {
