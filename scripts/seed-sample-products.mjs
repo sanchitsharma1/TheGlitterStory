@@ -253,6 +253,34 @@ async function main() {
   }
 
   const cat = Object.fromEntries(categories.map((c) => [c.slug, c.id]));
+
+  // Category hero images — subjects verified (anklet = foot, rings = bands)
+  const categoryImages = {
+    necklaces: img.pearlNeck,
+    earrings: img.hoops,
+    bracelets: img.bracelet,
+    // Real silver anklet on foot (not a necklace lifestyle crop)
+    anklets:
+      "https://images.unsplash.com/photo-1635770607507-beb7d7972491?w=900&q=80",
+    anklet:
+      "https://images.unsplash.com/photo-1635770607507-beb7d7972491?w=900&q=80",
+    // Minimal gold wedding bands
+    rings:
+      "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?w=900&q=80",
+    ring:
+      "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?w=900&q=80",
+  };
+  for (const [slug, image_url] of Object.entries(categoryImages)) {
+    const id = cat[slug];
+    if (!id) continue;
+    const { error } = await supabase
+      .from("categories")
+      .update({ image_url })
+      .eq("id", id);
+    if (error) console.error("CAT FAIL", slug, error.message);
+    else console.log("CAT ", slug, "image set");
+  }
+
   const products = samples(cat);
 
   // Upsert by slug so re-running is safe

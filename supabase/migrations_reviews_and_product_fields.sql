@@ -1,5 +1,6 @@
--- Optional migration: product material/care + customer reviews
--- Run once in Supabase SQL Editor
+-- REQUIRED for material/care fields on products (and for reviews).
+-- Without this, product create/update still works but material_info + care_notes are ignored.
+-- Run once in Supabase SQL Editor (Dashboard → SQL → New query → Run)
 
 alter table products add column if not exists material_info text;
 alter table products add column if not exists care_notes text;
